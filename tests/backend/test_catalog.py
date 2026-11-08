@@ -159,6 +159,15 @@ def test_http_errors(client, url, status):
     assert response.context['status_code'] == status
 
 
+@pytest.mark.parametrize('book_id', [-(2**63)-1, -(2**63), 2**63-1, 2**63])
+def test_detail_integer_boundaries(client, db, book_id):
+    assert get_book(db, book_id) is None
+    response = client.get(f'/books/{book_id}')
+    assert response.status_code == 404
+    assert response.template.name == 'error.html'
+    assert response.context['status_code'] == 404
+
+
 def test_seed_matches_documented_books():
     specification = (Path(__file__).resolve().parents[2] / 'docs' / 'sample-data.md').read_text(encoding='utf-8')
     rows = re.findall(r'^\| (\d+) \| (.*?) \| (.*?) \| (.*?) \| ([\d,]+) \| ([\d,]+) \|$', specification, re.M)

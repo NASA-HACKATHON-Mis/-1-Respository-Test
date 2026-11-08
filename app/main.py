@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -35,12 +36,19 @@ def create_app() -> FastAPI:
 
     @application.exception_handler(HTTPException)
     async def http_error(request, exc):
+        # Asset errors must not depend on frontend HTML templates being present.
+        if request.url.path.startswith('/static/'):
+            return await http_exception_handler(request, exc)
         return render(request, 'error.html', {
             'status_code': exc.status_code, 'message': str(exc.detail),
         }, exc.status_code)
-    # Frontend-owned directories may not exist until B0 lands.
+    # An empty static mount returns 404 before B0 supplies its assets. Merely
+    # setting check_dir=False would still fail check_config on the first request.
+    static_directory = APP_DIR / "static"
     application.mount(
-        "/static", StaticFiles(directory=str(APP_DIR / "static"), check_dir=False), name="static"
+        "/static",
+        StaticFiles(directory=str(static_directory) if static_directory.is_dir() else None),
+        name="static",
     )
     return application
 

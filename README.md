@@ -51,9 +51,12 @@ Uvicorn server returned HTTP 200 for `/docs`. Tests use temporary databases.
 The installed Starlette emits an httpx TestClient deprecation warning; tests pass.
 The Windows environment also reported a non-failing pytest cache permission warning.
 
-A1 verification on Python 3.13.5: 47 backend tests passed with
+A1 verification on Python 3.13.5: 53 backend tests passed with
 `python -m pytest tests/backend -q -p no:cacheprovider`; `pip check` passed.
 Seed CLI verification against a disposable DB inserted 20 books on its first run
 and 0 on its second. Tests cover schema constraints, seed rollback/preservation,
 exact documented book content, catalog queries, pagination, HTTP statuses, and
 template context keys. The existing Starlette TestClient deprecation warning remains.
+Review regression coverage includes signed 64-bit book-ID boundaries and static
+asset requests with and without the frontend directory. Missing static assets
+return 404 even before frontend error templates are available.

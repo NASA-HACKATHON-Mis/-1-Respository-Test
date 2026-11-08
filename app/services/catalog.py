@@ -16,6 +16,9 @@ def book_context(row):
 
 
 def get_book(db, book_id):
+    # Python integers are unbounded; SQLite INTEGER IDs are signed 64-bit values.
+    if not -(2**63) <= book_id <= 2**63 - 1:
+        return None
     row = db.execute('SELECT * FROM books WHERE id = ?', (book_id,)).fetchone()
     return book_context(row) if row else None
 
