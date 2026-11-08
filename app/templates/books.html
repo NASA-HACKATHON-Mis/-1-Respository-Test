@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% from 'components.html' import book_card, pager, error_summary %}
+{% from 'components.html' import filters_form with context %}
+{% block title %}{{ filters.category or '전체 도서' }} · 갈피{% endblock %}
+{% block content %}
+<div class="shell page-content"><p class="breadcrumb"><a href="/">홈</a> / 도서</p><div class="page-heading"><p class="eyebrow">THE BOOKSHELF</p><h1>{{ filters.category or '전체 도서' }}</h1><p>마음에 남을 한 권을 찾아보세요.</p></div>
+{{ error_summary(errors) }}
+<div class="catalog-toolbar"><p>총 <strong>{{ pagination.total_items }}</strong>권</p>{{ filters_form(filters, '/books') }}</div>
+{% if books %}<div class="book-grid">{% for book in books %}{{ book_card(book) }}{% endfor %}</div>{% else %}<div class="empty-state"><span class="empty-symbol" aria-hidden="true">↗</span><h2>표시할 도서가 없습니다.</h2><p>카테고리나 페이지를 다시 확인해 주세요.</p><a href="/books" class="button button-primary">전체 도서 보기</a></div>{% endif %}
+{{ pager(pagination, filters, '/books') }}</div>
+{% endblock %}
