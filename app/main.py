@@ -29,9 +29,13 @@ def create_app() -> FastAPI:
     )
     application.state.templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
     application.add_middleware(SessionMiddleware, secret_key=secret, same_site="lax")
-    # Frontend-owned directories may not exist until B0 lands.
+    # An empty static mount returns 404 before B0 supplies its assets. Merely
+    # setting check_dir=False would still fail check_config on the first request.
+    static_directory = APP_DIR / "static"
     application.mount(
-        "/static", StaticFiles(directory=str(APP_DIR / "static"), check_dir=False), name="static"
+        "/static",
+        StaticFiles(directory=str(static_directory) if static_directory.is_dir() else None),
+        name="static",
     )
     return application
 

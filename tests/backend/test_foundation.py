@@ -51,3 +51,27 @@ def test_missing_secret_fails_startup(monkeypatch):
     monkeypatch.delenv("SESSION_SECRET", raising=False)
     with pytest.raises(RuntimeError, match="SESSION_SECRET"), TestClient(create_app()):
         pass
+
+
+def test_static_requests_without_frontend_directory(monkeypatch, tmp_path):
+    monkeypatch.setenv("SESSION_SECRET", "test-only-secret")
+    monkeypatch.setattr("app.main.APP_DIR", tmp_path)
+    assert not (tmp_path / "static").exists()
+    with TestClient(create_app()) as client:
+        for path in ("/static/missing.css", "/static/covers/01.svg"):
+            assert client.get(path).status_code == 404
+        assert client.get("/docs").status_code == 200
+    assert not (tmp_path / "static").exists()
+
+
+def test_static_requests_with_frontend_directory(monkeypatch, tmp_path):
+    monkeypatch.setenv("SESSION_SECRET", "test-only-secret")
+    monkeypatch.setattr("app.main.APP_DIR", tmp_path)
+    static_directory = tmp_path / "static"
+    static_directory.mkdir()
+    (static_directory / "style.css").write_text("body { color: teal; }", encoding="utf-8")
+    with TestClient(create_app()) as client:
+        response = client.get("/static/style.css")
+        assert response.status_code == 200
+        assert response.text == "body { color: teal; }"
+        assert client.get("/static/missing.css").status_code == 404
