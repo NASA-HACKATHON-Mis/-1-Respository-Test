@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% from 'components.html' import book_card, pager, error_summary %}
+{% from 'components.html' import filters_form with context %}
+{% block title %}{{ filters.q or '전체 도서' }} 검색 · 갈피{% endblock %}
+{% block content %}
+<div class="shell page-content"><p class="breadcrumb"><a href="/">홈</a> / 검색</p><div class="page-heading"><p class="eyebrow">FIND YOUR STORY</p><h1>{% if filters.q %}‘{{ filters.q }}’ 검색 결과{% else %}전체 도서 검색{% endif %}</h1><p>제목, 저자, 출판사로 이야기를 찾아보세요.</p></div>
+{{ error_summary(errors) }}
+<div class="catalog-toolbar"><p>총 <strong>{{ pagination.total_items }}</strong>권</p>{{ filters_form(filters, '/search') }}</div>
+{% if books %}<div class="book-grid">{% for book in books %}{{ book_card(book) }}{% endfor %}</div>{% else %}<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span><h2>검색 결과가 없습니다.</h2><p>다른 검색어를 입력하거나 카테고리를 변경해 보세요.</p><a href="/books" class="button button-primary">전체 도서 둘러보기</a></div>{% endif %}
+{{ pager(pagination, filters, '/search') }}</div>
+{% endblock %}
